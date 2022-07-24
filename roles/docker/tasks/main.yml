@@ -1,27 +1,19 @@
-- name: Copy docker executables 
-  copy: src={{ base_dir }}/bin/docker/{{ docker_version }}/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
-  with_items:
-  - docker-containerd
-  - docker-containerd-shim
-  - docker-init
-  - docker-runc
-  - docker
-  - docker-containerd-ctr
-  - dockerd
-  - docker-proxy
+- name: Create apt repo variable
+  become: true
+  shell: echo "deb [allow-insecure=yes] http://10.140.79.120:8081/apt-repo ./" > /etc/apt/sources.list
 
-- name: Copy docker command
-  copy: src=docker dest=/etc/bash_completion.d/docker mode=0644
+- name: Update apt packages
+  become: true
+  shell: apt update -y
 
-- name: Flush iptables
-  shell: "iptables -F && iptables -X \
-        && iptables -F -t nat && iptables -X -t nat \
-        && iptables -F -t raw && iptables -X -t raw \
-        && iptables -F -t mangle && iptables -X -t mangle"
+- name: Install docker
+  apt:
+    name: docker.io
+    state: present
+    allow-unauthenticated: yes
 
-- name: Create docker systemd unit file
-  template: src=docker.service.j2 dest=/etc/systemd/system/docker.service
-
-- name: Start docker service
-  shell: systemctl daemon-reload && systemctl enable docker && systemctl restart docker
-
+- name: Install APT Transport HTTPS
+  apt:
+    name: apt-transport-https
+    state: present
+    allow-unauthenticated: yes
