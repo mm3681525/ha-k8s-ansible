@@ -1,28 +1,29 @@
 # Kubernetes nodes
 [first-master]
-192.168.100.10 node_name=master01
+10.140.79.121 node_name=master01
 
 [other-master]
-192.168.100.20 node_name=master02
-192.168.100.20 node_name=master03
+10.140.79.122 node_name=master02
+10.140.79.123 node_name=master03
 
 [kube-node]
-192.168.100.40 node_name=node01
-192.168.100.50 node_name=node02
+10.140.79.107 node_name=worker01
+10.140.79.109 node_name=worker02
+10.140.79.110 node_name=worker03
 
 [lb-etcd]
-192.168.100.10 if="eth0" lb_role=master priority=100 node_name=master01 
-192.168.100.20 if="eth0" lb_role=backup priority=90 node_name=master02
-192.168.100.30 if="eth0" lb_role=backup priority=80 node_name=master03
+10.140.79.121 if="eth0" lb_role=master priority=100 node_name=master01 
+10.140.79.122 if="eth0" lb_role=backup priority=90 node_name=master02
+10.140.79.123 if="eth0" lb_role=backup priority=80 node_name=master03
 
 
 [all:vars]
-master01="192.168.100.10"
-master02="192.168.100.20"
-master03="192.168.100.30"
+master01="10.140.79.121"
+master02="10.140.79.122"
+master03="10.140.79.123"
 
 #Kubernetes API Server
-keepalived_vip="192.168.100.60"
+keepalived_vip="10.140.79.121"
 
 kube-apiserver="https://{{ keepalived_vip }}:6443"
 
@@ -31,8 +32,8 @@ tmp_nodes="{% for h in groups['lb-etcd'] %}{{ hostvars[h]['node_name'] }}=https:
 etcd_nodes="{{ tmp_nodes.rstrip(',') }}"
 
 # etcd endpoints
-tem_endpoints="{% for h in groups['lb-etcd'] %}https://{{ h }}:2379,{% endfor %}"
-etcd_endpoints="{{ tem_endpoints.rstrip(',') }}"
+tmp_endpoints="{% for h in groups['lb-etcd'] %}https://{{ h }}:2379,{% endfor %}"
+etcd_endpoints="{{ tmp_endpoints.rstrip(',') }}"
 
 # Network plugin (calico or flannel)
 network_plugin="flannel"
@@ -49,17 +50,13 @@ base_dir="/etc/ansible"
 etcd_ca_dir="/etc/kubernetes/pki/etcd"
 
 # Docker version
-docker_version="v17.03.2-ce"
+docker_version="20.10.12"
 
 # etc version
-etcd_version="v3.3.4"
+etcd_version="v3.5.0-0"
 
 # Kubernetes version
-k8s_version_ubuntu="1.10.0-00"
-k8s_version_centos="1.10.0-0"
-
-# Helm version
-helm_version="v2.9.1"
+k8s_version_ubuntu="v1.22.0-00"
 
 # The certificates directory on frist master node
 cert_generate_dir="/opt/ssl"
