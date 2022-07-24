@@ -16,15 +16,13 @@
 10.140.79.122 if="eth0" lb_role=backup priority=90 node_name=master02
 10.140.79.123 if="eth0" lb_role=backup priority=80 node_name=master03
 
-
 [all:vars]
 master01="10.140.79.121"
 master02="10.140.79.122"
 master03="10.140.79.123"
 
-#Kubernetes API Server
+# Kubernetes API Server
 keepalived_vip="10.140.79.121"
-
 kube-apiserver="https://{{ keepalived_vip }}:6443"
 
 # etcd nodes
