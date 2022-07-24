@@ -1,38 +1,92 @@
-- name: Add kubernetes repo
-  template: src=kubernetes.repo dest=/etc/yum.repos.d/kubernetes.repo
-  when: ansible_distribution == "CentOS"
+- name: Make the Swap inactive
+  command: swapoff -a
 
-- name: Install kubeadm kubectl kubelet on Centos
-  yum: name={{ item }} update_cache=yes
-  with_items:
-  - kubelet-{{ k8s_version_centos }}
-  - kubeadm-{{ k8s_version_centos }}
-  - kubectl-{{ k8s_version_centos }}
-  when: ansible_distribution == "CentOS"
+- name: create kubernetes repo variable
+  become: true
+  shell: echo "deb [allow-insecure=yes] http://10.140.79.120:8081/apt-repo ./" > /etc/apt/sources.list
 
-- name: Change cgroup driver
-  template: src=10-kubeadm.conf dest=/etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-  when: ansible_distribution == "CentOS"
+- name: update the packages
+  become: true
+  shell: apt update -y
 
-- name: Restart kubectl kubelet kubeadm
-  shell: systemctl daemon-reload && systemctl enable kubelet && systemctl restart kubelet
-  when: ansible_distribution == "CentOS"
-
-- name: Add kubernetes apt-key
-  apt_key:
-    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+- name: containerd Installation
+  apt:
+    name: containerd
     state: present
-  when: ansible_distribution == "Ubuntu"
+    allow-unauthenticated: yes
 
-- name: Add kubernetes source list
-  shell: >
-    echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-  when: ansible_distribution == "Ubuntu"
+- name: Docker Installation
+  apt:
+    name: docker.io
+    state: present
+    allow-unauthenticated: yes
 
-- name: Install kubernetes tools for Ubuntu server
-  apt: name={{ item }} update_cache=yes
+- name: install APT Transport HTTPS
+  apt:
+    name: apt-transport-https
+    state: present
+    allow-unauthenticated: yes
+
+- name: install kubeadm
+  apt:
+    name: kubeadm=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+
+- name: install kubelet
+  apt:
+    name: kubelet=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+    update_cache: true
+
+- name: install kubectl
+  apt:
+    name: kubectl=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+    update_cache: true
+
+- name: install ebtables
+  apt:
+    name: ebtables
+    state: present
+    allow-unauthenticated: yes
+
+- name: install acl
+  apt:
+    name: acl
+    state: present
+    allow-unauthenticated: yes
+
+- name: Creating a daemon json
+  copy:
+   dest: "/etc/docker/daemon.json"
+   content: |
+    {
+    "exec-opts": ["native.cgroupdriver=systemd"],
+    "insecure-registries": ["10.140.79.120:5000"]
+    }
+- name: restarting the docker
+  shell: |
+    systemctl daemon-reload
+    systemctl restart docker
+    systemctl restart kubelet
+- name: Login to docker registry
+  shell: docker login 10.140.79.120:5000 -u iflocalregistry -p '&mF&FWnu'
+
+- name: Get k8s docker images
+  shell: kubeadm config images pull --image-repository 10.140.79.120:5000
+
+- name: Get calico docker images
+  shell: "docker pull 10.140.79.120:5000/{{ item }}"
   with_items:
-  - kubelet={{ k8s_version_ubuntu }}
-  - kubectl={{ k8s_version_ubuntu }}
-  - kubeadm={{ k8s_version_ubuntu }}
-  when: ansible_distribution == "Ubuntu"
+     - calico/cni:v3.23.3
+     - calico/node:v3.23.3
+     - calico/kube-controllers:v3.23.3
+
+- name: Get kubernetes-dashboard docker images
+  shell: "docker pull 10.140.79.120:5000/{{ item }}"
+  with_items:
+     - dashboard:v2.0.0
+     - metrics-scraper:v1.0.4
