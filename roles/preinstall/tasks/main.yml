@@ -12,10 +12,10 @@
 
 - name: Install socat for Ubuntu server
   become: true
-  apt: name={{ item }} state=latest
-  with_items:
-  - socat
-  allow-unauthenticated: yes
+  apt: 
+    name: socat
+    state: latest
+    allow-unauthenticated: yes
 
 - name: Disable swap
   shell: swapoff -a
