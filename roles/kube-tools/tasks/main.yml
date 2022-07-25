@@ -17,13 +17,13 @@
     state: present
     allow-unauthenticated: yes
     with_items:
-    - docker.io
-    - apt-transport-https
-    - kubeadm=1.22.0-00
-    - kubelet=1.22.0-00
-    - kubectl=1.22.0-00
-    - ebtables
-    - acl
+      - docker.io
+      - apt-transport-https
+      - kubeadm=1.22.0-00
+      - kubelet=1.22.0-00
+      - kubectl=1.22.0-00
+      - ebtables
+      - acl
 
 - name: Creating a daemon json
   become: true
