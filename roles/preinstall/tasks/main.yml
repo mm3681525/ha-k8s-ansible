@@ -1,5 +1,5 @@
 - name: Set hostname
-  become: yes
+  become: true
   shell: hostname {{node_name}} && echo {{ node_name }} > /etc/hostname
 
 - name: create apt repo variable
@@ -11,6 +11,7 @@
   shell: apt update -y
 
 - name: Install socat for Ubuntu server
+  become: true
   apt: name={{ item }} state=latest
   with_items:
   - socat
