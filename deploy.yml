@@ -37,15 +37,5 @@
 - hosts:
   - first-master
   roles:
-  - { role: flannel, when: "network_plugin == 'flannel'" }
-  - { role: calico, when: "network_plugin == 'calico'" }
-
+  - flannel
   - kube-apps
-
-
-
-
-
-
-
-
