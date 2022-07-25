@@ -33,7 +33,8 @@
         -profile=kubernetes etcd-csr.json | {{ bin_dir }}/cfssljson -bare etcd"
 
 - name: Copy certificates from first master node to local
-  fetch: src={{ cert_generate_dir }}/{{ item }} dest={{ cert_generate_dir }}/{{ item }}
+  fetch: src={{ cert_generate_dir }}/{{ item }} dest={{ base_dir }}/{{ item }}
+  flat: yes
   with_items:
   - ca-key.pem
   - ca.pem
