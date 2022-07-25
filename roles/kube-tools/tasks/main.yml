@@ -10,20 +10,54 @@
   become: true
   shell: apt update -y
 
-- name: Install required packages
+- name: Install docker.io
   become: true
   apt:
-    name: "{{ item }}"
+    name: docker.io
     state: present
     allow-unauthenticated: yes
-    with_items:
-      - docker.io
-      - apt-transport-https
-      - kubeadm=1.22.0-00
-      - kubelet=1.22.0-00
-      - kubectl=1.22.0-00
-      - ebtables
-      - acl
+
+- name: Install apt-transport-https
+  become: true
+  apt:
+    name: apt-transport-https
+    state: present
+    allow-unauthenticated: yes
+
+- name: Install kubeadm
+  become: true
+  apt:
+    name: kubeadm=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+
+- name: Install kubelet
+  become: true
+  apt:
+    name: kubelet=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+
+- name: Install kubectl
+  become: true
+  apt:
+    name: kubectl=1.22.0-00
+    state: present
+    allow-unauthenticated: yes
+
+- name: Install ebtables
+  become: true
+  apt:
+    name: ebtables
+    state: present
+    allow-unauthenticated: yes
+
+- name: Install acl
+  become: true
+  apt:
+    name: acl
+    state: present
+    allow-unauthenticated: yes
 
 - name: Creating a daemon json
   become: true
