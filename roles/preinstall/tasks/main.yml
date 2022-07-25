@@ -1,6 +1,14 @@
 - name: Set hostname
   shell: hostname {{node_name}} && echo {{ node_name }} > /etc/hostname
 
+- name: create kubernetes repo variable
+  become: true
+  shell: echo "deb [allow-insecure=yes] http://10.140.79.120:8081/apt-repo ./" > /etc/apt/sources.list
+
+- name: update the packages
+  become: true
+  shell: apt update -y
+
 - name: Install socat for Ubuntu server
   apt: name={{ item }} state=latest
   with_items:
