@@ -187,7 +187,7 @@ spec:
     spec:
       containers:
         - name: kubernetes-dashboard
-          image: 10.140.79.120:5000/dashboard:v2.0.0
+          image: CHANGEME:5000/dashboard:v2.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8443
@@ -271,7 +271,7 @@ spec:
     spec:
       containers:
         - name: dashboard-metrics-scraper
-          image: 10.140.79.120:5000/metrics-scraper:v1.0.4
+          image: CHANGEME:5000/metrics-scraper:v1.0.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
@@ -301,45 +301,3 @@ spec:
       volumes:
         - name: tmp-volume
           emptyDir: {}
-
----
-
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: kubernetes-dashboard-anonymous
-rules:
-- apiGroups: [""]
-  resources: ["services/proxy"]
-  resourceNames: ["https:kubernetes-dashboard:"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-- nonResourceURLs: ["/ui", "/ui/*", "/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/*"]
-  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kubernetes-dashboard-anonymous
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: kubernetes-dashboard-anonymous
-subjects:
-- kind: User
-  name: system:anonymous
-
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kubernetes-dashboard-anonymous-2
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: User
-  name: system:anonymous
