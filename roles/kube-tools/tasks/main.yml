@@ -1,4 +1,5 @@
 - name: Make the Swap inactive
+  become: true
   command: swapoff -a
 
 - name: create kubernetes repo variable
@@ -9,57 +10,23 @@
   become: true
   shell: apt update -y
 
-- name: containerd Installation
+- name: Install required packages
+  become: true
   apt:
-    name: containerd
+    name: {{ item }}
     state: present
     allow-unauthenticated: yes
-
-- name: Docker Installation
-  apt:
-    name: docker.io
-    state: present
-    allow-unauthenticated: yes
-
-- name: install APT Transport HTTPS
-  apt:
-    name: apt-transport-https
-    state: present
-    allow-unauthenticated: yes
-
-- name: install kubeadm
-  apt:
-    name: kubeadm=1.22.0-00
-    state: present
-    allow-unauthenticated: yes
-
-- name: install kubelet
-  apt:
-    name: kubelet=1.22.0-00
-    state: present
-    allow-unauthenticated: yes
-    update_cache: true
-
-- name: install kubectl
-  apt:
-    name: kubectl=1.22.0-00
-    state: present
-    allow-unauthenticated: yes
-    update_cache: true
-
-- name: install ebtables
-  apt:
-    name: ebtables
-    state: present
-    allow-unauthenticated: yes
-
-- name: install acl
-  apt:
-    name: acl
-    state: present
-    allow-unauthenticated: yes
+  with_items:
+  - docker.io
+  - apt-transport-https
+  - kubeadm=1.22.0-00
+  - kubelet=1.22.0-00
+  - kubectl=1.22.0-00
+  - ebtables
+  - acl
 
 - name: Creating a daemon json
+  become: true
   copy:
    dest: "/etc/docker/daemon.json"
    content: |
@@ -67,26 +34,35 @@
     "exec-opts": ["native.cgroupdriver=systemd"],
     "insecure-registries": ["10.140.79.120:5000"]
     }
+
 - name: restarting the docker
+  become: true
   shell: |
     systemctl daemon-reload
     systemctl restart docker
     systemctl restart kubelet
+
 - name: Login to docker registry
   shell: docker login 10.140.79.120:5000 -u iflocalregistry -p '&mF&FWnu'
 
 - name: Get k8s docker images
   shell: kubeadm config images pull --image-repository 10.140.79.120:5000
 
-- name: Get calico docker images
+- name: Get flannel docker images
   shell: "docker pull 10.140.79.120:5000/{{ item }}"
   with_items:
-     - calico/cni:v3.23.3
-     - calico/node:v3.23.3
-     - calico/kube-controllers:v3.23.3
+     - mirrored-flannelcni-flannel:v0.19.0
+     - mirrored-flannelcni-flannel-cni-plugin:v1.1.0
 
 - name: Get kubernetes-dashboard docker images
   shell: "docker pull 10.140.79.120:5000/{{ item }}"
   with_items:
      - dashboard:v2.0.0
      - metrics-scraper:v1.0.4
+  
+- name: Get nginx-ingress-controller docker images
+  shell: "docker pull 10.140.79.120:5000/{{ item }}"
+  with_items:
+     - controller:v1.2.0
+     - kube-webhook-certgen:v1.1.1
+
