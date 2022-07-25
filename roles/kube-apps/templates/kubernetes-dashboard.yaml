@@ -187,7 +187,7 @@ spec:
     spec:
       containers:
         - name: kubernetes-dashboard
-          image: CHANGEME:5000/dashboard:v2.0.0
+          image: 10.140.79.120:5000/dashboard:v2.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8443
@@ -271,7 +271,7 @@ spec:
     spec:
       containers:
         - name: dashboard-metrics-scraper
-          image: CHANGEME:5000/metrics-scraper:v1.0.4
+          image: 10.140.79.120:5000/metrics-scraper:v1.0.4
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
