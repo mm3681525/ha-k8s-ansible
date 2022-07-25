@@ -1,15 +1,18 @@
 - name: Create cert folder
+  become: true
   file: name={{ item }} state=directory
   with_items:
   - "{{ cert_generate_dir }}"
 
 - name: Download CFSSL and kubectl
+  become: true
   copy: src={{ base_dir }}/bin/ca/v1.2/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
   with_items:
   - cfssl
   - cfssljson
 
 - name: Create CSR and config filses
+  become: true
   template: src={{ item }} dest={{ cert_generate_dir }}/{{ item }}
   with_items:
   - ca-csr.json
@@ -17,15 +20,14 @@
   - etcd-csr.json
 
 - name: Generate certificates
+  become: true
   shell: "cd {{ cert_generate_dir }} && {{ bin_dir }}/cfssl gencert \
         -initca ca-csr.json | cfssljson -bare ca" 
 
 - name: Generate etcd certificates
+  become: true
   shell: "cd {{ cert_generate_dir }} && {{ bin_dir }}/cfssl gencert \
         -ca=ca.pem \
         -ca-key=ca-key.pem \
         -config=ca-config.json \
         -profile=kubernetes etcd-csr.json | {{ bin_dir }}/cfssljson -bare etcd"
-
-
-
