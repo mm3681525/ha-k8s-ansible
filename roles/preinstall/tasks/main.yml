@@ -15,7 +15,7 @@
   apt: name={{ item }} state=latest
   with_items:
   - socat
-  when: ansible_distribution == "Ubuntu"
+  allow-unauthenticated: yes
 
 - name: Disable swap
   shell: swapoff -a
