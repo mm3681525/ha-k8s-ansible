@@ -1,15 +1,18 @@
 - name: Copy etcd executables
+  become: true
   copy: src={{ base_dir }}/bin/etcd/{{ etcd_version }}/{{ item }} dest={{ bin_dir }}/{{ item }} mode=0755
   with_items:
   - etcd
   - etcdctl
 
 - name: Create etcd CA folder
+  become: true
   file: name={{ item }} state=directory
   with_items:
   - "{{ etcd_ca_dir }}"
 
-- name: Copy certificates from frist master node
+- name: Copy certificates from first master node
+  become: true
   copy: src={{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }}
   with_items:
   - ca-key.pem
@@ -18,11 +21,13 @@
   - etcd.pem
 
 - name: Create etcd working directroy
+  become: true
   file: name=/var/lib/etcd state=directory
 
 - name: Create etcd systemd unit file
+  become: true
   template: src=etcd.service.j2 dest=/etc/systemd/system/etcd.service
 
 - name: Start etcd service
+  become: true
   shell: systemctl daemon-reload && systemctl enable etcd && systemctl restart etcd
-
