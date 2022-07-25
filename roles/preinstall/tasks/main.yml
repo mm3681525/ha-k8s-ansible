@@ -1,7 +1,8 @@
 - name: Set hostname
+  become: yes
   shell: hostname {{node_name}} && echo {{ node_name }} > /etc/hostname
 
-- name: create kubernetes repo variable
+- name: create apt repo variable
   become: true
   shell: echo "deb [allow-insecure=yes] http://10.140.79.120:8081/apt-repo ./" > /etc/apt/sources.list
 
