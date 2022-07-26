@@ -7,7 +7,9 @@
 
 
 - name: Modify keepalived.conf
+  become: true
   template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
 
 - name: Restart keepalived
+  become: true
   shell: systemctl daemon-reload && systemctl enable keepalived && systemctl restart keepalived
