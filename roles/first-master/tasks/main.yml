@@ -1,7 +1,9 @@
 - name: Create certiticates folder
+  become: true
   file: name={{ etcd_ca_dir }} state=directory
 
 - name: Copy certificates from frist master node
+  become: true
   copy: src={{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }}
   with_items:
   - ca-key.pem
@@ -10,26 +12,31 @@
   - etcd.pem
  
 - name: Create kubeadm config file
+  become: true
   template: src=kubeadm-config.yaml.j2 dest={{ kube_config_dir }}/kubeadm-config.yaml  
 
 - name: Check apiserver cert existence
+  become: true
   stat:
     path: "{{ kube_cert_dir }}/apiserver.pem"
   register: old_apiserver_cert
   run_once: true
 
 - name: Check current master status
+  become: true
   stat:
     path: "{{ kube_cert_dir }}/ca.key"
   register: kubeadm_ca
 
 - name: Delete existing admin.conf
+  become: true
   file:
     path: "{{ kube_config_dir }}/admin.conf"
     state: absent
   when: not kubeadm_ca.stat.exists
 
 - name: Delete existing static pods
+  become: true
   file:
     path: "{{ kube_config_dir }}/manifests/{{item}}.manifest"
     state: absent
@@ -37,11 +44,13 @@
   when: old_apiserver_cert.stat.exists
 
 - name: Forcefully delete existing static pods
+  become: true
   shell: "docker ps -f name=k8s_{{item}} -q | xargs --no-run-if-empty docker rm -f"
   with_items: ["kube-apiserver", "kube-controller-manager", "kube-scheduler"]
   when: old_apiserver_cert.stat.exists
 
 - name: Init kubernetes master
+  become: true
   command: timeout -k 300s 300s kubeadm init --config {{ kube_config_dir }}/kubeadm-config.yaml --ignore-preflight-errors=all
   register: kubeadm_init
   retries: 3
@@ -49,17 +58,21 @@
   failed_when: kubeadm_init.rc != 0 and "field is immutable" not in kubeadm_init.stderr
 
 - name: Create kubectl config folder
+  become: true
   file: name=/root/.kube state=directory
 
 - name: Copy kubectl config
+  become: true
   shell: cp {{ kube_config_dir }}/admin.conf /root/.kube/config
 
 - name: Create VIP service point for kubernetes API server
+  become: true
   shell: sed -i 's/{{ inventory_hostname }}/{{ keepalived_vip }}/' /root/.kube/config
 
 - name: Get the token
+  become: true
   shell: kubeadm token create --print-join-command > {{ kube_cert_dir }}/join
 
 - name: Change joining command
+  become: true
   shell: sed -i 's/{{ inventory_hostname }}/{{ keepalived_vip }}/' {{ kube_cert_dir }}/join
-
