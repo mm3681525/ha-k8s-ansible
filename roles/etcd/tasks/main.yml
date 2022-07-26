@@ -13,7 +13,7 @@
 
 - name: Copy certificates from local to other master nodes
   become: true
-  copy: src={{ base_dir }}/{{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }} remote_src=yes
+  copy: src={{ base_dir }}/{{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }}
   with_items:
   - ca-key.pem
   - ca.pem
