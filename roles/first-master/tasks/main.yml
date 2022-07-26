@@ -4,7 +4,7 @@
 
 - name: Copy certificates from frist master node
   become: true
-  copy: src={{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }}
+  copy: src={{ cert_generate_dir }}/{{ item }} dest={{ etcd_ca_dir }}/{{ item }} remote_src=yes
   with_items:
   - ca-key.pem
   - ca.pem
